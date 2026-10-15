@@ -1,0 +1,3018 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>博爱超市 · 网上购物</title>
+  <!-- Supabase CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    * {
+      box-sizing: border-box;
+      font-family: system-ui, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background: linear-gradient(145deg, #f0f7ff 0%, #e6f0fa 100%);
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+    }
+
+    .app-container {
+      width: 1300px;
+      max-width: 98%;
+      height: 90vh;
+      background: rgba(255, 255, 255, 0.7);
+      backdrop-filter: blur(6px);
+      border-radius: 40px;
+      box-shadow: 0 30px 45px -15px rgba(0, 20, 50, 0.3);
+      display: flex;
+      overflow: hidden;
+      border: 1px solid rgba(255, 255, 255, 0.5);
+      flex-direction: column;
+    }
+
+    /* ----- 主页 ----- */
+    .home-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100%;
+      gap: 50px;
+      padding: 40px;
+    }
+
+    .home-title {
+      font-size: 3.5rem;
+      font-weight: 800;
+      color: #1e3b5c;
+      text-shadow: 4px 4px 0 #f9c74f;
+      letter-spacing: 2px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .home-sub {
+      font-size: 1.2rem;
+      color: #4a6e8c;
+      margin-top: -20px;
+      font-weight: 500;
+    }
+
+    .role-cards {
+      display: flex;
+      gap: 50px;
+      flex-wrap: wrap;
+      justify-content: center;
+      margin-top: 20px;
+    }
+
+    .role-card {
+      background: white;
+      width: 260px;
+      height: 280px;
+      border-radius: 50px;
+      box-shadow: 0 20px 30px -10px #1e3b5c40;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 20px;
+      cursor: pointer;
+      transition: 0.25s ease;
+      border: 3px solid transparent;
+    }
+
+    .role-card:hover {
+      transform: translateY(-10px);
+      box-shadow: 0 30px 40px -12px #1e3b5c60;
+      border-color: #f9c74f;
+    }
+
+    .role-icon {
+      font-size: 5rem;
+    }
+
+    .role-name {
+      font-size: 2rem;
+      font-weight: 700;
+      color: #1e3b5c;
+    }
+
+    .role-desc {
+      color: #6b8aa8;
+      font-weight: 500;
+    }
+
+    /* ----- 页面容器 ----- */
+    .page-container {
+      display: none;
+      flex-direction: column;
+      height: 100%;
+      width: 100%;
+      overflow: hidden;
+    }
+
+    .page-container.active {
+      display: flex;
+    }
+
+    /* ----- 学生选择墙（含管理） ----- */
+    .student-wall {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      background: #ffffffd9;
+      backdrop-filter: blur(4px);
+      overflow-y: auto;
+      padding: 30px;
+    }
+
+    .wall-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 30px;
+      flex-wrap: wrap;
+      gap: 15px;
+    }
+
+    .wall-header h2 {
+      font-size: 1.8rem;
+      color: #1e3b5c;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .wall-actions {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .btn-manage-students {
+      background: #1e3b5c;
+      color: white;
+      border: none;
+      border-radius: 40px;
+      padding: 10px 22px;
+      font-weight: 600;
+      cursor: pointer;
+      font-size: 0.9rem;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: 0.2s;
+    }
+
+    .btn-manage-students:hover {
+      background: #0f2a42;
+    }
+
+    .student-cards-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      gap: 24px;
+      padding: 10px 0;
+    }
+
+    .student-info-card {
+      background: white;
+      border-radius: 28px;
+      box-shadow: 0 10px 20px -8px #1e3b5c30;
+      padding: 24px 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+      cursor: pointer;
+      transition: 0.25s;
+      border: 3px solid transparent;
+      text-align: center;
+    }
+
+    .student-info-card:hover {
+      transform: translateY(-6px);
+      box-shadow: 0 22px 30px -12px #1e3b5c50;
+      border-color: #f9c74f;
+    }
+
+    .student-avatar {
+      font-size: 3.5rem;
+      background: #e8f0fe;
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      flex-shrink: 0;
+    }
+
+    .student-avatar img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .student-info-card .name {
+      font-weight: 700;
+      font-size: 1.3rem;
+      color: #0f2a42;
+    }
+
+    .student-info-card .class {
+      color: #4a6e8c;
+      font-size: 0.95rem;
+      background: #eef4fc;
+      padding: 4px 16px;
+      border-radius: 30px;
+    }
+
+    .student-info-card .balance {
+      font-weight: 700;
+      font-size: 1.4rem;
+      color: #1e3b5c;
+      background: #f9c74f;
+      padding: 6px 20px;
+      border-radius: 40px;
+      margin-top: 6px;
+    }
+
+    /* ----- 学生管理面板 ----- */
+    .student-manage-panel {
+      display: none;
+      flex-direction: column;
+      gap: 20px;
+      background: white;
+      border-radius: 28px;
+      padding: 24px;
+      box-shadow: 0 10px 30px -10px #1e3b5c30;
+      margin-bottom: 20px;
+    }
+
+    .student-manage-panel.active {
+      display: flex;
+    }
+
+    .student-manage-panel h3 {
+      font-size: 1.2rem;
+      color: #1e3b5c;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      border-bottom: 2px solid #e0edfa;
+      padding-bottom: 12px;
+    }
+
+    .manage-form-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      align-items: center;
+    }
+
+    .manage-form-group {
+      flex: 1 0 120px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .manage-form-group label {
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: #4a6e8c;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .manage-form-group input {
+      padding: 10px 12px;
+      border-radius: 16px;
+      border: 1px solid #cddef0;
+      background: #f9fcff;
+      font-size: 0.9rem;
+      outline: none;
+    }
+
+    .student-manage-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      max-height: 320px;
+      overflow-y: auto;
+      margin-top: 4px;
+    }
+
+    .student-manage-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: #f4faff;
+      padding: 10px 14px;
+      border-radius: 20px;
+      font-size: 0.9rem;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .student-manage-actions {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+
+    .student-manage-actions button {
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 1.1rem;
+      padding: 4px;
+    }
+
+    .student-avatar-manage {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: #e8f0fe;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.2rem;
+      flex-shrink: 0;
+      cursor: pointer;
+      border: 2px solid #cddef0;
+    }
+
+    .student-avatar-manage img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .manage-empty {
+      text-align: center;
+      color: #7b98b3;
+      padding: 30px 20px;
+      font-size: 0.95rem;
+    }
+
+    /* ----- 学生商品选购页 ----- */
+    .student-window {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      background: #ffffffd9;
+      backdrop-filter: blur(4px);
+      overflow: hidden;
+    }
+
+    .student-header {
+      padding: 18px 24px;
+      background: #1e3b5c;
+      color: white;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 10px;
+      flex-shrink: 0;
+    }
+
+    .student-header h2 {
+      font-weight: 600;
+      font-size: 1.6rem;
+      letter-spacing: 1px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .student-header h2 span {
+      font-size: 1rem;
+      background: #f9c74f;
+      color: #1e3b5c;
+      padding: 2px 10px;
+      border-radius: 40px;
+      font-weight: 700;
+    }
+
+    .current-student-info {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      background: #2a4a6e;
+      padding: 6px 18px;
+      border-radius: 40px;
+      font-size: 0.95rem;
+      flex-wrap: wrap;
+    }
+
+    .current-student-avatar {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      overflow: hidden;
+      background: #e8f0fe;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.2rem;
+      flex-shrink: 0;
+    }
+
+    .current-student-avatar img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .student-balance {
+      background: #f9c74f;
+      color: #1e3b5c;
+      padding: 5px 16px;
+      border-radius: 30px;
+      font-weight: 700;
+    }
+
+    .back-home-btn {
+      background: #f9c74f;
+      border: none;
+      border-radius: 40px;
+      padding: 8px 16px;
+      font-weight: 600;
+      color: #1e3b5c;
+      cursor: pointer;
+      font-size: 0.85rem;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: 0.2s;
+    }
+
+    .back-home-btn:hover {
+      background: #f3b32a;
+    }
+
+    .back-student-list-btn {
+      background: #e0edfa;
+      border: none;
+      border-radius: 40px;
+      padding: 8px 16px;
+      font-weight: 600;
+      color: #1e3b5c;
+      cursor: pointer;
+      font-size: 0.85rem;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: 0.2s;
+    }
+
+    .back-student-list-btn:hover {
+      background: #cddef0;
+    }
+
+    .history-btn {
+      background: #9ab3d1;
+      border: none;
+      border-radius: 40px;
+      padding: 8px 16px;
+      font-weight: 600;
+      color: white;
+      cursor: pointer;
+      font-size: 0.85rem;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: 0.2s;
+    }
+
+    .history-btn:hover {
+      background: #7b98b3;
+    }
+
+    /* 分类标签 */
+    .category-tabs {
+      display: flex;
+      gap: 8px;
+      padding: 16px 24px 8px;
+      flex-wrap: wrap;
+      flex-shrink: 0;
+    }
+
+    .category-btn {
+      background: #e8f0fe;
+      border: none;
+      padding: 8px 20px;
+      border-radius: 30px;
+      font-weight: 600;
+      color: #1e3b5c;
+      cursor: pointer;
+      transition: 0.2s;
+      font-size: 0.9rem;
+      box-shadow: 0 2px 5px #0000000a;
+    }
+
+    .category-btn.active {
+      background: #1e3b5c;
+      color: white;
+      box-shadow: 0 8px 12px -5px #1e3b5c80;
+    }
+
+    .product-grid {
+      flex: 1;
+      overflow-y: auto;
+      padding: 16px 24px 24px;
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
+      gap: 20px;
+      align-content: start;
+    }
+
+    .product-card {
+      background: white;
+      border-radius: 24px;
+      box-shadow: 0 6px 15px #b0c8e030;
+      padding: 14px 12px 12px;
+      display: flex;
+      flex-direction: column;
+      transition: 0.2s;
+      border: 1px solid #ffffff;
+    }
+
+    .product-card:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 16px 25px -8px #1e3b5c40;
+    }
+
+    .product-img {
+      width: 100%;
+      height: 130px;
+      border-radius: 16px;
+      background: #f1f6fc;
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 2.5rem;
+      color: #9ab3d1;
+      overflow: hidden;
+      flex-shrink: 0;
+      cursor: pointer;
+      position: relative;
+      transition: 0.2s;
+    }
+
+    .product-img:hover {
+      opacity: 0.85;
+    }
+
+    .product-img img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      display: block;
+      pointer-events: none;
+    }
+
+    .product-img::after {
+      content: '🔍';
+      position: absolute;
+      bottom: 6px;
+      right: 6px;
+      font-size: 1rem;
+      background: #ffffffcc;
+      border-radius: 50%;
+      width: 26px;
+      height: 26px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      transition: 0.2s;
+      pointer-events: none;
+    }
+
+    .product-img:hover::after {
+      opacity: 1;
+    }
+
+    .product-name {
+      font-weight: 700;
+      color: #0f2a42;
+      font-size: 1rem;
+      margin-bottom: 4px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .product-price {
+      font-weight: 700;
+      color: #1e3b5c;
+      background: #e8f0fe;
+      display: inline-block;
+      padding: 4px 12px;
+      border-radius: 40px;
+      font-size: 0.9rem;
+      margin: 6px 0 10px;
+      align-self: flex-start;
+    }
+
+    .product-category-tag {
+      font-size: 0.7rem;
+      color: #6b8aa8;
+      background: #eef4fc;
+      padding: 2px 8px;
+      border-radius: 20px;
+      align-self: flex-start;
+      margin-bottom: 6px;
+    }
+
+    .btn-add-cart {
+      background: #1e3b5c;
+      border: none;
+      color: white;
+      font-weight: 600;
+      padding: 8px 0;
+      border-radius: 40px;
+      cursor: pointer;
+      transition: 0.2s;
+      font-size: 0.9rem;
+      width: 100%;
+      margin-top: auto;
+    }
+
+    .btn-add-cart:disabled {
+      background: #b3c7db;
+      cursor: not-allowed;
+      opacity: 0.6;
+    }
+
+    .btn-add-cart:not(:disabled):hover {
+      background: #0f2a42;
+    }
+
+    /* 购物车 */
+    .cart-section {
+      background: #f4faff;
+      border-top: 2px solid #c8daea;
+      padding: 16px 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      flex-shrink: 0;
+    }
+
+    .cart-items {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      max-height: 80px;
+      overflow-y: auto;
+      font-size: 0.85rem;
+    }
+
+    .cart-item-chip {
+      background: white;
+      border-radius: 40px;
+      padding: 4px 12px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      box-shadow: 0 2px 5px #b0c8e030;
+    }
+
+    .cart-item-chip button {
+      background: none;
+      border: none;
+      color: #b22222;
+      font-weight: 700;
+      cursor: pointer;
+      font-size: 1rem;
+    }
+
+    .cart-total {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-weight: 700;
+      font-size: 1.1rem;
+      color: #1e3b5c;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .btn-pay {
+      background: #f9c74f;
+      border: none;
+      padding: 12px 30px;
+      border-radius: 40px;
+      font-weight: 700;
+      font-size: 1rem;
+      color: #1e3b5c;
+      cursor: pointer;
+      transition: 0.2s;
+      box-shadow: 0 8px 14px -6px #f9c74f;
+    }
+
+    .btn-pay:hover {
+      background: #f3b32a;
+    }
+
+    /* ----- 老师窗口 ----- */
+    .teacher-window {
+      flex: 1;
+      background: #eef4fc;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .teacher-header {
+      background: #2a4a6e;
+      color: white;
+      padding: 18px 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 10px;
+      flex-shrink: 0;
+    }
+
+    .teacher-header h2 {
+      font-size: 1.3rem;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .lock-icon {
+      font-size: 1.2rem;
+    }
+
+    .password-area {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .password-input {
+      border: none;
+      border-radius: 40px;
+      padding: 8px 14px;
+      font-size: 0.85rem;
+      width: 110px;
+      background: #ffffffd0;
+      outline: none;
+    }
+
+    .btn-unlock {
+      background: #f9c74f;
+      border: none;
+      border-radius: 40px;
+      padding: 8px 16px;
+      font-weight: 600;
+      color: #1e3b5c;
+      cursor: pointer;
+      font-size: 0.8rem;
+      transition: 0.1s;
+    }
+
+    .teacher-content {
+      flex: 1;
+      overflow-y: auto;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+      min-height: 0;
+    }
+
+    .admin-section {
+      background: white;
+      border-radius: 24px;
+      padding: 18px;
+      box-shadow: 0 4px 12px #b0c8e020;
+      flex-shrink: 0;
+    }
+
+    .admin-section h3 {
+      color: #1e3b5c;
+      font-size: 1.1rem;
+      margin-bottom: 14px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      border-bottom: 2px solid #e0edfa;
+      padding-bottom: 10px;
+    }
+
+    .form-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-bottom: 12px;
+      align-items: center;
+    }
+
+    .form-group {
+      flex: 1 0 120px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .form-group label {
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: #4a6e8c;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .form-group input, .form-group select {
+      padding: 10px 12px;
+      border-radius: 16px;
+      border: 1px solid #cddef0;
+      background: #f9fcff;
+      font-size: 0.9rem;
+      outline: none;
+    }
+
+    .btn-primary {
+      background: #1e3b5c;
+      border: none;
+      color: white;
+      padding: 10px 20px;
+      border-radius: 40px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: 0.2s;
+      font-size: 0.9rem;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+    }
+
+    .btn-primary:hover {
+      background: #0f2a42;
+    }
+
+    .btn-primary:disabled {
+      background: #b3c7db;
+      cursor: not-allowed;
+    }
+
+    .btn-danger {
+      background: #e74c3c;
+      border: none;
+      color: white;
+      padding: 6px 14px;
+      border-radius: 40px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: 0.2s;
+      font-size: 0.8rem;
+    }
+
+    .btn-danger:hover {
+      background: #c0392b;
+    }
+
+    .btn-edit {
+      background: #f9c74f;
+      border: none;
+      color: #1e3b5c;
+      padding: 6px 14px;
+      border-radius: 40px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: 0.2s;
+      font-size: 0.8rem;
+    }
+
+    .btn-edit:hover {
+      background: #f3b32a;
+    }
+
+    .category-group {
+      margin-bottom: 18px;
+      border-radius: 16px;
+      background: #f9fcff;
+      padding: 12px 14px;
+    }
+
+    .category-title {
+      font-weight: 700;
+      color: #1e3b5c;
+      font-size: 0.95rem;
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      border-left: 4px solid #f9c74f;
+      padding-left: 10px;
+    }
+
+    .product-manage-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: white;
+      padding: 10px 14px;
+      border-radius: 20px;
+      margin-bottom: 6px;
+      font-size: 0.9rem;
+      box-shadow: 0 2px 6px #b0c8e015;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .product-manage-info {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .product-manage-thumb {
+      width: 40px;
+      height: 40px;
+      border-radius: 10px;
+      background: #f1f6fc;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1rem;
+      color: #8aa2bc;
+      flex-shrink: 0;
+      cursor: pointer;
+    }
+
+    .product-manage-thumb img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .product-manage-actions {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+
+    .price-badge {
+      background: #e8f0fe;
+      padding: 4px 10px;
+      border-radius: 30px;
+      font-weight: 600;
+      color: #1e3b5c;
+      font-size: 0.8rem;
+      white-space: nowrap;
+    }
+
+    .preview-box {
+      width: 80px;
+      height: 80px;
+      border-radius: 16px;
+      background: #f1f6fc;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      border: 2px dashed #b0c8e0;
+      font-size: 0.75rem;
+      color: #8aa2bc;
+      flex-shrink: 0;
+      cursor: pointer;
+    }
+
+    .preview-box img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+    }
+
+    .avatar-preview-box {
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      background: #f1f6fc;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      border: 2px dashed #b0c8e0;
+      font-size: 0.75rem;
+      color: #8aa2bc;
+      flex-shrink: 0;
+      cursor: pointer;
+    }
+
+    .avatar-preview-box img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .hidden {
+      display: none !important;
+    }
+
+    .teacher-lock-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      background: #eef4fcd0;
+      backdrop-filter: blur(3px);
+      gap: 20px;
+      color: #1e3b5c;
+      font-weight: 600;
+      z-index: 10;
+    }
+
+    .teacher-lock-overlay input {
+      padding: 14px 20px;
+      border-radius: 40px;
+      border: 1px solid #b0c8e0;
+      font-size: 1.2rem;
+      text-align: center;
+      width: 200px;
+    }
+
+    /* ===== 图片放大预览模态框 ===== */
+    .image-modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.75);
+      backdrop-filter: blur(6px);
+      z-index: 9999;
+      align-items: center;
+      justify-content: center;
+      padding: 40px;
+    }
+
+    .image-modal.active {
+      display: flex;
+    }
+
+    .modal-content {
+      position: relative;
+      max-width: 80vw;
+      max-height: 80vh;
+      border-radius: 32px;
+      overflow: hidden;
+      box-shadow: 0 30px 60px -12px black;
+      background: #1e1e2e;
+      padding: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .modal-content img {
+      max-width: 80vw;
+      max-height: 78vh;
+      width: auto;
+      height: auto;
+      object-fit: contain;
+      border-radius: 24px;
+      display: block;
+    }
+
+    .modal-close {
+      position: absolute;
+      top: -16px;
+      right: -16px;
+      background: #f9c74f;
+      color: #1e3b5c;
+      border: none;
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      font-size: 1.6rem;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 6px 14px #00000040;
+      transition: 0.2s;
+      line-height: 1;
+    }
+
+    .modal-close:hover {
+      background: #f3b32a;
+      transform: scale(1.05);
+    }
+
+    .modal-caption {
+      position: absolute;
+      bottom: 20px;
+      left: 0;
+      right: 0;
+      text-align: center;
+      color: white;
+      font-weight: 600;
+      text-shadow: 0 2px 8px black;
+      font-size: 1rem;
+      pointer-events: none;
+    }
+
+    /* ===== 购买记录模态框 ===== */
+    .history-modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.5);
+      backdrop-filter: blur(4px);
+      z-index: 9998;
+      align-items: center;
+      justify-content: center;
+      padding: 40px;
+    }
+
+    .history-modal.active {
+      display: flex;
+    }
+
+    .history-content {
+      background: white;
+      border-radius: 32px;
+      width: 600px;
+      max-width: 90vw;
+      max-height: 80vh;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      box-shadow: 0 30px 60px -12px black;
+    }
+
+    .history-header {
+      background: #1e3b5c;
+      color: white;
+      padding: 20px 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .history-header h3 {
+      font-size: 1.2rem;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .history-close {
+      background: #f9c74f;
+      border: none;
+      border-radius: 50%;
+      width: 36px;
+      height: 36px;
+      font-size: 1.2rem;
+      font-weight: 700;
+      cursor: pointer;
+      color: #1e3b5c;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: 0.2s;
+    }
+
+    .history-close:hover {
+      background: #f3b32a;
+    }
+
+    .history-body {
+      flex: 1;
+      overflow-y: auto;
+      padding: 20px 24px;
+    }
+
+    .history-record {
+      background: #f9fcff;
+      border-radius: 16px;
+      padding: 14px 18px;
+      margin-bottom: 12px;
+      border-left: 4px solid #f9c74f;
+    }
+
+    .history-record-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+      font-weight: 700;
+      color: #1e3b5c;
+      font-size: 0.9rem;
+    }
+
+    .history-record-total {
+      color: #e67e22;
+    }
+
+    .history-record-items {
+      font-size: 0.85rem;
+      color: #4a6e8c;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .history-record-item {
+      background: white;
+      padding: 3px 10px;
+      border-radius: 20px;
+      box-shadow: 0 1px 3px #b0c8e020;
+    }
+
+    .history-empty {
+      text-align: center;
+      color: #7b98b3;
+      padding: 40px 20px;
+      font-size: 0.95rem;
+    }
+
+    /* ===== 编辑商品模态框 ===== */
+    .edit-modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.5);
+      backdrop-filter: blur(4px);
+      z-index: 9997;
+      align-items: center;
+      justify-content: center;
+      padding: 40px;
+    }
+
+    .edit-modal.active {
+      display: flex;
+    }
+
+    .edit-content {
+      background: white;
+      border-radius: 32px;
+      width: 560px;
+      max-width: 90vw;
+      max-height: 85vh;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      box-shadow: 0 30px 60px -12px black;
+    }
+
+    .edit-header {
+      background: #1e3b5c;
+      color: white;
+      padding: 20px 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .edit-header h3 {
+      font-size: 1.2rem;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .edit-close {
+      background: #f9c74f;
+      border: none;
+      border-radius: 50%;
+      width: 36px;
+      height: 36px;
+      font-size: 1.2rem;
+      font-weight: 700;
+      cursor: pointer;
+      color: #1e3b5c;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: 0.2s;
+    }
+
+    .edit-close:hover {
+      background: #f3b32a;
+    }
+
+    .edit-body {
+      flex: 1;
+      overflow-y: auto;
+      padding: 20px 24px;
+    }
+
+    .edit-footer {
+      padding: 16px 24px;
+      background: #f9fcff;
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+      border-top: 1px solid #e0edfa;
+    }
+
+    .edit-form-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-bottom: 14px;
+      align-items: flex-end;
+    }
+
+    .edit-form-group {
+      flex: 1 0 140px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .edit-form-group label {
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: #4a6e8c;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .edit-form-group input, .edit-form-group select {
+      padding: 10px 12px;
+      border-radius: 16px;
+      border: 1px solid #cddef0;
+      background: #f9fcff;
+      font-size: 0.9rem;
+      outline: none;
+    }
+
+    .btn-save {
+      background: #27ae60;
+      border: none;
+      color: white;
+      padding: 10px 24px;
+      border-radius: 40px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: 0.2s;
+      font-size: 0.9rem;
+    }
+
+    .btn-save:hover {
+      background: #219a52;
+    }
+
+    .btn-cancel {
+      background: #cddef0;
+      border: none;
+      color: #1e3b5c;
+      padding: 10px 24px;
+      border-radius: 40px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: 0.2s;
+      font-size: 0.9rem;
+    }
+
+    .btn-cancel:hover {
+      background: #b0c8e0;
+    }
+
+    /* ===== 编辑学生模态框 ===== */
+    .edit-student-modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.5);
+      backdrop-filter: blur(4px);
+      z-index: 9996;
+      align-items: center;
+      justify-content: center;
+      padding: 40px;
+    }
+
+    .edit-student-modal.active {
+      display: flex;
+    }
+
+    .edit-student-content {
+      background: white;
+      border-radius: 32px;
+      width: 520px;
+      max-width: 90vw;
+      max-height: 85vh;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      box-shadow: 0 30px 60px -12px black;
+    }
+
+    .edit-student-header {
+      background: #1e3b5c;
+      color: white;
+      padding: 20px 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .edit-student-header h3 {
+      font-size: 1.2rem;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .edit-student-close {
+      background: #f9c74f;
+      border: none;
+      border-radius: 50%;
+      width: 36px;
+      height: 36px;
+      font-size: 1.2rem;
+      font-weight: 700;
+      cursor: pointer;
+      color: #1e3b5c;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: 0.2s;
+    }
+
+    .edit-student-close:hover {
+      background: #f3b32a;
+    }
+
+    .edit-student-body {
+      flex: 1;
+      overflow-y: auto;
+      padding: 24px;
+    }
+
+    .edit-student-footer {
+      padding: 16px 24px;
+      background: #f9fcff;
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+      border-top: 1px solid #e0edfa;
+    }
+
+    .edit-student-form-row {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .edit-student-form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .edit-student-form-group label {
+      font-size: 0.8rem;
+      font-weight: 700;
+      color: #4a6e8c;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .edit-student-form-group input {
+      padding: 12px 16px;
+      border-radius: 16px;
+      border: 1px solid #cddef0;
+      background: #f9fcff;
+      font-size: 1rem;
+      outline: none;
+      transition: 0.2s;
+    }
+
+    .edit-student-form-group input:focus {
+      border-color: #1e3b5c;
+      background: white;
+    }
+
+    /* 加载提示 */
+    .loading-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(30, 59, 92, 0.9);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      z-index: 99999;
+      color: white;
+      font-size: 1.2rem;
+      font-weight: 600;
+      gap: 20px;
+    }
+
+    .loading-overlay.hidden {
+      display: none;
+    }
+
+    .loading-spinner {
+      width: 50px;
+      height: 50px;
+      border: 5px solid #f9c74f;
+      border-top-color: transparent;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    ::-webkit-scrollbar {
+      width: 6px;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #b0c8e0;
+      border-radius: 10px;
+    }
+  </style>
+</head>
+<body>
+
+<!-- 加载提示 -->
+<div class="loading-overlay" id="loadingOverlay">
+  <div class="loading-spinner"></div>
+  <div>正在加载云端数据...</div>
+</div>
+
+<div class="app-container">
+  <!-- ========== 主页 ========== -->
+  <div id="homePage" class="page-container active home-container">
+    <div class="home-title">
+      <span>🛒</span> 博爱超市
+    </div>
+    <div class="home-sub">请选择您的身份</div>
+    <div class="role-cards">
+      <div class="role-card" id="goStudentBtn">
+        <div class="role-icon">👩‍🎓</div>
+        <div class="role-name">学生</div>
+        <div class="role-desc">选购商品 · 管理学生</div>
+      </div>
+      <div class="role-card" id="goTeacherBtn">
+        <div class="role-icon">👨‍🏫</div>
+        <div class="role-name">老师</div>
+        <div class="role-desc">管理商品</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========== 学生页面（选择墙 + 学生管理） ========== -->
+  <div id="studentWallPage" class="page-container">
+    <div class="student-wall">
+      <div class="wall-header">
+        <h2>👋 请选择你的身份</h2>
+        <div class="wall-actions">
+          <button class="btn-manage-students" id="toggleManageStudents">⚙️ 管理学生</button>
+          <button class="back-home-btn" id="backFromWall">🏠 返回主页</button>
+        </div>
+      </div>
+
+      <!-- 学生管理面板（默认隐藏） -->
+      <div class="student-manage-panel" id="studentManagePanel">
+        <h3>👩‍🎓 学生管理</h3>
+        <div class="manage-form-row">
+          <div class="manage-form-group">
+            <label>姓名</label>
+            <input type="text" id="studentNameInput" placeholder="姓名">
+          </div>
+          <div class="manage-form-group">
+            <label>班级</label>
+            <input type="text" id="studentClassInput" placeholder="班级">
+          </div>
+          <div class="manage-form-group">
+            <label>初始金额</label>
+            <input type="number" id="studentMoneyInput" value="20" min="0" step="1">
+          </div>
+          <div class="manage-form-group" style="flex:0 0 auto;">
+            <label>头像 (可选)</label>
+            <input type="file" id="studentAvatarFile" accept="image/*">
+          </div>
+          <div class="manage-form-group" style="flex:0 0 auto;">
+            <label>预览</label>
+            <div class="avatar-preview-box" id="avatarPreviewBox">👤</div>
+          </div>
+          <button class="btn-primary" id="addStudentBtn">➕ 增加学生</button>
+        </div>
+        <div class="student-manage-list" id="studentListManage"></div>
+      </div>
+
+      <div class="student-cards-grid" id="studentCardsGrid"></div>
+    </div>
+  </div>
+
+  <!-- ========== 学生购物页面 ========== -->
+  <div id="studentShopPage" class="page-container">
+    <div class="student-window">
+      <div class="student-header">
+        <h2>🛒 博爱超市 <span>学生</span></h2>
+        <div class="current-student-info">
+          <div class="current-student-avatar" id="currentStudentAvatar">👤</div>
+          <span id="currentStudentNameDisplay">—</span>
+          <div class="student-balance" id="studentBalanceDisplay">0 元</div>
+        </div>
+        <div style="display:flex; gap:8px;">
+          <button class="history-btn" id="viewHistoryBtn">📋 我的订单</button>
+          <button class="back-student-list-btn" id="backToStudentList">👥 学生列表</button>
+          <button class="back-home-btn" id="backFromShop">🏠 主页</button>
+        </div>
+      </div>
+
+      <div class="category-tabs" id="categoryTabs">
+        <button class="category-btn active" data-category="全部">🗂️ 全部</button>
+        <button class="category-btn" data-category="零食">🍿 零食</button>
+        <button class="category-btn" data-category="饮料">🥤 饮料</button>
+        <button class="category-btn" data-category="日用品">🧴 日用品</button>
+        <button class="category-btn" data-category="玩具文具">✏️ 玩具文具</button>
+      </div>
+
+      <div class="product-grid" id="productGrid"></div>
+
+      <div class="cart-section">
+        <div class="cart-items" id="cartItems"></div>
+        <div class="cart-total">
+          <span>合计: <span id="cartTotalPrice">0.00</span> 元</span>
+          <button class="btn-pay" id="payBtn">💰 去付款</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========== 老师页面（只保留商品管理） ========== -->
+  <div id="teacherPage" class="page-container">
+    <div class="teacher-window">
+      <div class="teacher-header">
+        <h2><span class="lock-icon">🔐</span> 老师管理</h2>
+        <div class="password-area" id="passwordArea">
+          <input type="password" id="passwordInput" class="password-input" placeholder="密码" value="1234">
+          <button class="btn-unlock" id="unlockBtn">解锁</button>
+        </div>
+        <button class="back-home-btn" id="backFromTeacher">🏠 返回主页</button>
+      </div>
+
+      <div class="teacher-content hidden" id="teacherContent">
+        <!-- 添加商品 -->
+        <div class="admin-section">
+          <h3>📦 添加商品</h3>
+          <div class="form-row">
+            <div class="form-group">
+              <label>商品名称</label>
+              <input type="text" id="prodName" placeholder="如：铅笔">
+            </div>
+            <div class="form-group">
+              <label>价格 (元)</label>
+              <input type="number" id="prodPrice" step="0.5" min="0.5" value="2">
+            </div>
+            <div class="form-group">
+              <label>单位</label>
+              <input type="text" id="prodUnit" placeholder="个 / 包" value="个">
+            </div>
+            <div class="form-group">
+              <label>库存个数</label>
+              <input type="number" id="prodStock" min="0" value="10">
+            </div>
+            <div class="form-group">
+              <label>分类</label>
+              <select id="prodCategory">
+                <option value="零食">零食</option>
+                <option value="饮料">饮料</option>
+                <option value="日用品">日用品</option>
+                <option value="玩具文具">玩具文具</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group" style="flex:2">
+              <label>上传图片 (可选，最大20MB)</label>
+              <input type="file" id="prodImageFile" accept="image/*">
+            </div>
+            <div class="form-group" style="flex:0 0 auto;">
+              <label>预览</label>
+              <div class="preview-box" id="imagePreviewBox">无图片</div>
+            </div>
+            <button class="btn-primary" id="addProductBtn">➕ 添加商品</button>
+          </div>
+        </div>
+
+        <!-- 现有商品管理 -->
+        <div class="admin-section">
+          <h3>📋 现有商品管理</h3>
+          <div id="productManageContainer"></div>
+        </div>
+
+        <!-- 数据管理 -->
+        <div class="admin-section">
+          <h3>💾 数据管理</h3>
+          <div style="display:flex; flex-direction:column; gap:10px;">
+            <div style="font-size:0.85rem; color:#4a6e8c; padding:10px; background:#f9fcff; border-radius:12px;">
+              ☁️ <strong>云端存储：</strong>数据保存在 Supabase 云端数据库，
+              图片保存在 Supabase Storage。任何设备访问同一网址都能看到相同数据。
+            </div>
+            <button class="btn-danger" id="resetDataBtn" style="width:100%; padding:12px;">🔄 恢复默认数据（清空所有修改）</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- 锁屏覆盖层 -->
+      <div class="teacher-lock-overlay" id="lockOverlay">
+        <div style="font-size:2.5rem;">🔒</div>
+        <div>请输入管理密码</div>
+        <input type="password" id="lockPasswordInput" placeholder="密码" value="1234">
+        <button class="btn-primary" id="lockUnlockBtn">解锁</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== 图片放大预览模态框 ===== -->
+<div id="imageModal" class="image-modal">
+  <div class="modal-content">
+    <button class="modal-close" id="modalCloseBtn">✕</button>
+    <img id="modalImage" src="" alt="预览图片">
+    <div class="modal-caption" id="modalCaption"></div>
+  </div>
+</div>
+
+<!-- ===== 购买记录模态框 ===== -->
+<div id="historyModal" class="history-modal">
+  <div class="history-content">
+    <div class="history-header">
+      <h3>📋 购买记录</h3>
+      <button class="history-close" id="historyCloseBtn">✕</button>
+    </div>
+    <div class="history-body" id="historyBody"></div>
+  </div>
+</div>
+
+<!-- ===== 编辑商品模态框 ===== -->
+<div id="editModal" class="edit-modal">
+  <div class="edit-content">
+    <div class="edit-header">
+      <h3>✏️ 编辑商品</h3>
+      <button class="edit-close" id="editCloseBtn">✕</button>
+    </div>
+    <div class="edit-body">
+      <input type="hidden" id="editProductId">
+      <div class="edit-form-row">
+        <div class="edit-form-group">
+          <label>商品名称</label>
+          <input type="text" id="editProdName">
+        </div>
+      </div>
+      <div class="edit-form-row">
+        <div class="edit-form-group">
+          <label>价格 (元)</label>
+          <input type="number" id="editProdPrice" step="0.5" min="0.5">
+        </div>
+        <div class="edit-form-group">
+          <label>单位</label>
+          <input type="text" id="editProdUnit">
+        </div>
+      </div>
+      <div class="edit-form-row">
+        <div class="edit-form-group">
+          <label>库存个数</label>
+          <input type="number" id="editProdStock" min="0">
+        </div>
+        <div class="edit-form-group">
+          <label>分类</label>
+          <select id="editProdCategory">
+            <option value="零食">零食</option>
+            <option value="饮料">饮料</option>
+            <option value="日用品">日用品</option>
+            <option value="玩具文具">玩具文具</option>
+          </select>
+        </div>
+      </div>
+      <div class="edit-form-row">
+        <div class="edit-form-group" style="flex:2">
+          <label>更换图片 (可选，最大20MB)</label>
+          <input type="file" id="editProdImageFile" accept="image/*">
+        </div>
+        <div class="edit-form-group" style="flex:0 0 auto;">
+          <label>预览</label>
+          <div class="preview-box" id="editImagePreviewBox">无图片</div>
+        </div>
+      </div>
+    </div>
+    <div class="edit-footer">
+      <button class="btn-cancel" id="editCancelBtn">取消</button>
+      <button class="btn-save" id="editSaveBtn">💾 保存修改</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== 编辑学生模态框 ===== -->
+<div id="editStudentModal" class="edit-student-modal">
+  <div class="edit-student-content">
+    <div class="edit-student-header">
+      <h3>✏️ 编辑学生信息</h3>
+      <button class="edit-student-close" id="editStudentCloseBtn">✕</button>
+    </div>
+    <div class="edit-student-body">
+      <input type="hidden" id="editStudentId">
+      <div class="edit-student-form-row">
+        <div class="edit-student-form-group">
+          <label>姓名</label>
+          <input type="text" id="editStudentName" placeholder="学生姓名">
+        </div>
+        <div class="edit-student-form-group">
+          <label>班级</label>
+          <input type="text" id="editStudentClass" placeholder="班级">
+        </div>
+        <div class="edit-student-form-group">
+          <label>余额 (元)</label>
+          <input type="number" id="editStudentBalance" step="0.5" min="0" placeholder="金额">
+        </div>
+      </div>
+    </div>
+    <div class="edit-student-footer">
+      <button class="btn-cancel" id="editStudentCancelBtn">取消</button>
+      <button class="btn-save" id="editStudentSaveBtn">💾 保存修改</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  // ============================================================
+  // ★★★ 配置区：把下面两个值替换成你自己的 ★★★
+  // ============================================================
+  const SUPABASE_URL = '在这里填你的 Project URL';
+  const SUPABASE_ANON_KEY = '在这里填你的 anon public key';
+
+  // 初始化 Supabase 客户端
+  const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+  // ============================================================
+  // 云端数据读写
+  // ============================================================
+
+  // 从云端读取数据
+  async function loadFromCloud() {
+    const { data, error } = await supabaseClient
+      .from('app_data')
+      .select('*')
+      .eq('id', 1)
+      .maybeSingle();
+
+    if (error) {
+      console.error('读取云端数据失败：', error);
+      alert('读取云端数据失败：' + error.message);
+      return null;
+    }
+    return data;
+  }
+
+  // 保存数据到云端
+  async function saveToCloud() {
+    const { error } = await supabaseClient
+      .from('app_data')
+      .upsert({
+        id: 1,
+        products: products,
+        students: students
+      });
+
+    if (error) {
+      console.error('保存到云端失败：', error);
+      alert('保存失败：' + error.message);
+    }
+  }
+
+  // 上传图片到 Supabase Storage，返回公开访问的 URL
+  async function uploadImageToCloud(file) {
+    const ext = file.name.split('.').pop();
+    const fileName = `img_${Date.now()}_${Math.random().toString(36).substr(2, 9)}.${ext}`;
+
+    const { error } = await supabaseClient.storage
+      .from('images')
+      .upload(fileName, file);
+
+    if (error) {
+      console.error('图片上传失败：', error);
+      alert('图片上传失败：' + error.message);
+      return null;
+    }
+
+    const { data: urlData } = supabaseClient.storage
+      .from('images')
+      .getPublicUrl(fileName);
+
+    return urlData.publicUrl;
+  }
+
+  // ============================================================
+  // 默认数据
+  // ============================================================
+  const DEFAULT_PRODUCTS = [
+    { id: 'p1', name: '薯片', price: 5.5, unit: '包', stock: 12, category: '零食', image: null },
+    { id: 'p2', name: '可乐', price: 3.0, unit: '瓶', stock: 20, category: '饮料', image: null },
+    { id: 'p3', name: '笔记本', price: 7.0, unit: '本', stock: 8, category: '玩具文具', image: null },
+    { id: 'p4', name: '洗手液', price: 9.9, unit: '瓶', stock: 5, category: '日用品', image: null },
+  ];
+
+  const DEFAULT_STUDENTS = [
+    { id: 's1', name: '张小明', class: '三(1)班', balance: 20.0, cart: [], avatar: null, history: [] },
+    { id: 's2', name: '李小红', class: '三(2)班', balance: 10.0, cart: [], avatar: null, history: [] },
+  ];
+
+  // 全局数据
+  let products = [];
+  let students = [];
+
+  // 图片大小上限：20MB
+  const MAX_IMAGE_SIZE = 20 * 1024 * 1024;
+
+  // 保存数据（统一入口）
+  async function saveData() {
+    await saveToCloud();
+  }
+
+  // ============================================================
+  // 全局变量
+  // ============================================================
+  let currentStudentId = null;
+  let currentCategory = '全部';
+  let isTeacherUnlocked = false;
+  let uploadedImageBase64 = null;   // 这里现在存的是图片URL
+  let uploadedAvatarBase64 = null;  // 这里现在存的是图片URL
+  let editUploadedImageBase64 = null;
+
+  const categories = ['零食', '饮料', '日用品', '玩具文具'];
+  const categoryEmoji = { '零食': '🍿', '饮料': '🥤', '日用品': '🧴', '玩具文具': '✏️' };
+
+  // ============================================================
+  // DOM 元素
+  // ============================================================
+  const homePage = document.getElementById('homePage');
+  const studentWallPage = document.getElementById('studentWallPage');
+  const studentShopPage = document.getElementById('studentShopPage');
+  const teacherPage = document.getElementById('teacherPage');
+
+  const imageModal = document.getElementById('imageModal');
+  const modalImage = document.getElementById('modalImage');
+  const modalCaption = document.getElementById('modalCaption');
+  const modalCloseBtn = document.getElementById('modalCloseBtn');
+
+  const historyModal = document.getElementById('historyModal');
+  const historyBody = document.getElementById('historyBody');
+  const historyCloseBtn = document.getElementById('historyCloseBtn');
+
+  const editModal = document.getElementById('editModal');
+  const editCloseBtn = document.getElementById('editCloseBtn');
+  const editCancelBtn = document.getElementById('editCancelBtn');
+  const editSaveBtn = document.getElementById('editSaveBtn');
+
+  const editStudentModal = document.getElementById('editStudentModal');
+  const editStudentCloseBtn = document.getElementById('editStudentCloseBtn');
+  const editStudentCancelBtn = document.getElementById('editStudentCancelBtn');
+  const editStudentSaveBtn = document.getElementById('editStudentSaveBtn');
+
+  const studentManagePanel = document.getElementById('studentManagePanel');
+
+  // ============================================================
+  // 工具函数
+  // ============================================================
+  function generateId(prefix) {
+    return prefix + Date.now() + Math.random().toString(36).substr(2, 6);
+  }
+
+  function getStudentById(id) {
+    return students.find(s => s.id === id);
+  }
+
+  function formatTime() {
+    const d = new Date();
+    return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
+  }
+
+  function checkImageSize(file) {
+    if (!file) return false;
+    if (file.size > MAX_IMAGE_SIZE) {
+      alert(`图片太大！\n\n当前大小：${(file.size / (1024 * 1024)).toFixed(2)} MB\n上限：20 MB\n\n请换一张更小的图片。`);
+      return false;
+    }
+    return true;
+  }
+
+  // ============================================================
+  // 图片放大预览
+  // ============================================================
+  function openImageModal(src, caption) {
+    if (!src) return;
+    modalImage.src = src;
+    modalCaption.textContent = caption || '';
+    imageModal.classList.add('active');
+  }
+
+  function closeImageModal() {
+    imageModal.classList.remove('active');
+    modalImage.src = '';
+    modalCaption.textContent = '';
+  }
+
+  modalCloseBtn.addEventListener('click', closeImageModal);
+  imageModal.addEventListener('click', (e) => {
+    if (e.target === imageModal) closeImageModal();
+  });
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && imageModal.classList.contains('active')) {
+      closeImageModal();
+    }
+  });
+
+  // ============================================================
+  // 购买记录
+  // ============================================================
+  function openHistoryModal(studentId) {
+    const student = getStudentById(studentId || currentStudentId);
+    if (!student) return;
+    renderHistoryContent(student);
+    historyModal.classList.add('active');
+  }
+
+  function closeHistoryModal() {
+    historyModal.classList.remove('active');
+  }
+
+  function renderHistoryContent(student) {
+    if (!student.history || student.history.length === 0) {
+      historyBody.innerHTML = '<div class="history-empty">📭 暂无购买记录</div>';
+      return;
+    }
+
+    const records = [...student.history].reverse();
+    historyBody.innerHTML = records.map(record => `
+      <div class="history-record">
+        <div class="history-record-header">
+          <span>${record.time}</span>
+          <span class="history-record-total">共 ${record.total.toFixed(2)} 元</span>
+        </div>
+        <div class="history-record-items">
+          ${record.items.map(item => `
+            <span class="history-record-item">${item.name} ×${item.quantity}（${(item.price * item.quantity).toFixed(2)}元）</span>
+          `).join('')}
+        </div>
+      </div>
+    `).join('');
+  }
+
+  historyCloseBtn.addEventListener('click', closeHistoryModal);
+  historyModal.addEventListener('click', (e) => {
+    if (e.target === historyModal) closeHistoryModal();
+  });
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && historyModal.classList.contains('active')) {
+      closeHistoryModal();
+    }
+  });
+
+  // ============================================================
+  // 编辑商品模态框
+  // ============================================================
+  function openEditModal(productId) {
+    const product = products.find(p => p.id === productId);
+    if (!product) return;
+
+    document.getElementById('editProductId').value = product.id;
+    document.getElementById('editProdName').value = product.name;
+    document.getElementById('editProdPrice').value = product.price;
+    document.getElementById('editProdUnit').value = product.unit;
+    document.getElementById('editProdStock').value = product.stock;
+    document.getElementById('editProdCategory').value = product.category;
+
+    const previewBox = document.getElementById('editImagePreviewBox');
+    if (product.image) {
+      previewBox.innerHTML = `<img src="${product.image}">`;
+      editUploadedImageBase64 = product.image;
+    } else {
+      previewBox.innerHTML = '无图片';
+      editUploadedImageBase64 = null;
+    }
+
+    document.getElementById('editProdImageFile').value = '';
+    editModal.classList.add('active');
+  }
+
+  function closeEditModal() {
+    editModal.classList.remove('active');
+    editUploadedImageBase64 = null;
+    document.getElementById('editProdImageFile').value = '';
+  }
+
+  editCloseBtn.addEventListener('click', closeEditModal);
+  editCancelBtn.addEventListener('click', closeEditModal);
+  editModal.addEventListener('click', (e) => {
+    if (e.target === editModal) closeEditModal();
+  });
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && editModal.classList.contains('active')) {
+      closeEditModal();
+    }
+  });
+
+  document.getElementById('editProdImageFile').addEventListener('change', async (e) => {
+    const file = e.target.files[0];
+    const previewBox = document.getElementById('editImagePreviewBox');
+    if (file) {
+      if (!checkImageSize(file)) { e.target.value = ''; return; }
+      previewBox.innerHTML = '上传中...';
+      const imageUrl = await uploadImageToCloud(file);
+      if (imageUrl) {
+        editUploadedImageBase64 = imageUrl;
+        previewBox.innerHTML = `<img src="${imageUrl}">`;
+      } else {
+        previewBox.innerHTML = '上传失败';
+        editUploadedImageBase64 = null;
+      }
+    }
+  });
+
+  editSaveBtn.addEventListener('click', async () => {
+    const id = document.getElementById('editProductId').value;
+    const product = products.find(p => p.id === id);
+    if (!product) return;
+
+    const name = document.getElementById('editProdName').value.trim();
+    const price = parseFloat(document.getElementById('editProdPrice').value);
+    const unit = document.getElementById('editProdUnit').value.trim() || '个';
+    const stock = parseInt(document.getElementById('editProdStock').value, 10);
+    const category = document.getElementById('editProdCategory').value;
+
+    if (!name) { alert('请填写商品名称'); return; }
+    if (isNaN(price) || price <= 0) { alert('请输入有效的价格'); return; }
+    if (isNaN(stock) || stock < 0) { alert('请输入有效的库存数量'); return; }
+
+    product.name = name;
+    product.price = price;
+    product.unit = unit;
+    product.stock = stock;
+    product.category = category;
+    if (editUploadedImageBase64 !== null) {
+      product.image = editUploadedImageBase64;
+    }
+
+    await saveData();
+
+    closeEditModal();
+    renderProductManage();
+    renderStudentProducts();
+    renderCartItems();
+    updatePayButtonState();
+    alert('商品修改成功');
+  });
+
+  // ============================================================
+  // 编辑学生模态框
+  // ============================================================
+  function openEditStudentModal(studentId) {
+    const student = getStudentById(studentId);
+    if (!student) return;
+
+    document.getElementById('editStudentId').value = student.id;
+    document.getElementById('editStudentName').value = student.name;
+    document.getElementById('editStudentClass').value = student.class;
+    document.getElementById('editStudentBalance').value = student.balance;
+
+    editStudentModal.classList.add('active');
+  }
+
+  function closeEditStudentModal() {
+    editStudentModal.classList.remove('active');
+  }
+
+  editStudentCloseBtn.addEventListener('click', closeEditStudentModal);
+  editStudentCancelBtn.addEventListener('click', closeEditStudentModal);
+  editStudentModal.addEventListener('click', (e) => {
+    if (e.target === editStudentModal) closeEditStudentModal();
+  });
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && editStudentModal.classList.contains('active')) {
+      closeEditStudentModal();
+    }
+  });
+
+  editStudentSaveBtn.addEventListener('click', async () => {
+    const id = document.getElementById('editStudentId').value;
+    const student = getStudentById(id);
+    if (!student) return;
+
+    const name = document.getElementById('editStudentName').value.trim();
+    const className = document.getElementById('editStudentClass').value.trim();
+    const balance = parseFloat(document.getElementById('editStudentBalance').value);
+
+    if (!name) { alert('请填写学生姓名'); return; }
+    if (!className) { alert('请填写班级'); return; }
+    if (isNaN(balance) || balance < 0) { alert('请输入有效的金额'); return; }
+
+    student.name = name;
+    student.class = className;
+    student.balance = balance;
+
+    await saveData();
+
+    closeEditStudentModal();
+    renderStudentWall();
+    renderStudentListManage();
+    renderStudentProducts();
+    renderCartItems();
+    updateBalanceDisplay();
+    updatePayButtonState();
+    alert('学生信息修改成功');
+  });
+
+  // ============================================================
+  // 学生选择墙渲染
+  // ============================================================
+  function renderStudentWall() {
+    const grid = document.getElementById('studentCardsGrid');
+    if (!grid) return;
+    if (students.length === 0) {
+      grid.innerHTML = `<div style="grid-column:1/-1; text-align:center; color:#7b98b3; padding:50px; font-size:1.1rem;">暂无学生，请在管理面板添加~</div>`;
+      return;
+    }
+
+    grid.innerHTML = students.map(s => `
+      <div class="student-info-card" data-student-id="${s.id}">
+        <div class="student-avatar">
+          ${s.avatar ? `<img src="${s.avatar}" alt="${s.name}">` : '👤'}
+        </div>
+        <div class="name">${s.name}</div>
+        <div class="class">${s.class}</div>
+        <div class="balance">${s.balance.toFixed(2)} 元</div>
+      </div>
+    `).join('');
+
+    document.querySelectorAll('.student-info-card').forEach(card => {
+      card.addEventListener('click', () => {
+        const studentId = card.dataset.studentId;
+        currentStudentId = studentId;
+        showStudentShop();
+      });
+    });
+  }
+
+  // ============================================================
+  // 学生商品端渲染
+  // ============================================================
+  function updateBalanceDisplay() {
+    const student = getStudentById(currentStudentId);
+    const balanceSpan = document.getElementById('studentBalanceDisplay');
+    const nameSpan = document.getElementById('currentStudentNameDisplay');
+    const avatarDiv = document.getElementById('currentStudentAvatar');
+    if (balanceSpan) {
+      balanceSpan.textContent = student ? student.balance.toFixed(2) + ' 元' : '0 元';
+    }
+    if (nameSpan) {
+      nameSpan.textContent = student ? `${student.name} (${student.class})` : '—';
+    }
+    if (avatarDiv) {
+      if (student && student.avatar) {
+        avatarDiv.innerHTML = `<img src="${student.avatar}" alt="${student.name}">`;
+      } else {
+        avatarDiv.innerHTML = '👤';
+      }
+    }
+  }
+
+  function getCartTotal(cart) {
+    return cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+  }
+
+  function renderStudentProducts() {
+    const grid = document.getElementById('productGrid');
+    if (!grid) return;
+    const student = getStudentById(currentStudentId);
+    const cart = student ? student.cart : [];
+
+    let filtered;
+    if (currentCategory === '全部') {
+      filtered = [...products];
+    } else {
+      filtered = products.filter(p => p.category === currentCategory);
+    }
+
+    if (filtered.length === 0) {
+      grid.innerHTML = `<div style="grid-column:1/-1; text-align:center; color:#7b98b3; padding:40px; font-size:1rem;">✨ 暂时没有商品，等老师添加吧~</div>`;
+      return;
+    }
+
+    grid.innerHTML = filtered.map(product => {
+      const inCartQty = cart.filter(i => i.productId === product.id).reduce((acc, i) => acc + i.quantity, 0);
+      const remainingStock = product.stock - inCartQty;
+      const canAdd = remainingStock > 0 && student && (student.balance >= product.price) && product.stock > 0;
+
+      let imageHtml = '';
+      if (product.image) {
+        imageHtml = `<img src="${product.image}" alt="${product.name}">`;
+      } else {
+        imageHtml = `<span style="font-size:2.5rem;">${categoryEmoji[product.category] || '📦'}</span>`;
+      }
+
+      const categoryTagHtml = currentCategory === '全部' 
+        ? `<div class="product-category-tag">${categoryEmoji[product.category] || '📦'} ${product.category}</div>`
+        : '';
+
+      return `
+        <div class="product-card">
+          <div class="product-img" data-img-src="${product.image || ''}" data-img-caption="${product.name}">
+            ${imageHtml}
+          </div>
+          <div class="product-name">${product.name}</div>
+          ${categoryTagHtml}
+          <div class="product-price">${product.price.toFixed(2)} 元 / ${product.unit}</div>
+          <button class="btn-add-cart" data-id="${product.id}" ${!canAdd ? 'disabled' : ''}>
+            ${!canAdd ? '无法添加' : '🛒 加入购物车'}
+          </button>
+        </div>
+      `;
+    }).join('');
+
+    document.querySelectorAll('.btn-add-cart').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        const productId = e.target.dataset.id;
+        addToCart(productId);
+      });
+    });
+
+    document.querySelectorAll('.product-img').forEach(imgDiv => {
+      const src = imgDiv.dataset.imgSrc;
+      if (src && src !== '' && src !== 'null' && src !== 'undefined') {
+        imgDiv.addEventListener('click', () => {
+          openImageModal(src, imgDiv.dataset.imgCaption);
+        });
+      }
+    });
+  }
+
+  async function addToCart(productId) {
+    const student = getStudentById(currentStudentId);
+    if (!student) return;
+    const product = products.find(p => p.id === productId);
+    if (!product || product.stock <= 0) return;
+
+    const cart = student.cart;
+    const existing = cart.find(i => i.productId === productId);
+    const currentQty = existing ? existing.quantity : 0;
+
+    if (currentQty + 1 > product.stock) {
+      alert('库存不足');
+      return;
+    }
+
+    const newTotal = getCartTotal(cart) + product.price;
+    if (newTotal > student.balance) {
+      alert('余额不足，不能添加更多商品');
+      return;
+    }
+
+    if (existing) {
+      existing.quantity += 1;
+    } else {
+      cart.push({ productId: product.id, quantity: 1, price: product.price, name: product.name, unit: product.unit });
+    }
+
+    await saveData();
+
+    renderStudentProducts();
+    renderCartItems();
+    updatePayButtonState();
+  }
+
+  function renderCartItems() {
+    const student = getStudentById(currentStudentId);
+    const cartItemsDiv = document.getElementById('cartItems');
+    if (!cartItemsDiv) return;
+    if (!student || student.cart.length === 0) {
+      cartItemsDiv.innerHTML = '<span style="color:#a0b8d0; font-size:0.9rem;">购物车是空的，快去挑选吧~</span>';
+      document.getElementById('cartTotalPrice').textContent = '0.00';
+      return;
+    }
+
+    cartItemsDiv.innerHTML = student.cart.map(item => {
+      return `
+        <div class="cart-item-chip">
+          ${item.name} x${item.quantity} (${(item.price * item.quantity).toFixed(2)}元)
+          <button data-product-id="${item.productId}" class="remove-cart-item">✕</button>
+        </div>
+      `;
+    }).join('');
+
+    document.getElementById('cartTotalPrice').textContent = getCartTotal(student.cart).toFixed(2);
+
+    document.querySelectorAll('.remove-cart-item').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        const productId = e.target.dataset.productId;
+        removeFromCart(productId);
+      });
+    });
+  }
+
+  async function removeFromCart(productId) {
+    const student = getStudentById(currentStudentId);
+    if (!student) return;
+    const index = student.cart.findIndex(i => i.productId === productId);
+    if (index !== -1) student.cart.splice(index, 1);
+
+    await saveData();
+
+    renderStudentProducts();
+    renderCartItems();
+    updatePayButtonState();
+  }
+
+  function updatePayButtonState() {
+    const student = getStudentById(currentStudentId);
+    const payBtn = document.getElementById('payBtn');
+    if (!payBtn) return;
+    if (!student || student.cart.length === 0) {
+      payBtn.disabled = true;
+      payBtn.style.opacity = '0.6';
+    } else {
+      payBtn.disabled = false;
+      payBtn.style.opacity = '1';
+    }
+  }
+
+  async function pay() {
+    const student = getStudentById(currentStudentId);
+    if (!student || student.cart.length === 0) {
+      alert('购物车为空，无法付款');
+      return;
+    }
+    const total = getCartTotal(student.cart);
+    if (total > student.balance) {
+      alert('余额不足，无法付款');
+      return;
+    }
+
+    for (let item of student.cart) {
+      const product = products.find(p => p.id === item.productId);
+      if (product) {
+        if (product.stock < item.quantity) {
+          alert(`商品 ${product.name} 库存不足，请调整购物车`);
+          return;
+        }
+        product.stock -= item.quantity;
+      }
+    }
+
+    if (!student.history) student.history = [];
+    student.history.push({
+      time: formatTime(),
+      items: student.cart.map(item => ({ name: item.name, quantity: item.quantity, price: item.price, unit: item.unit })),
+      total: total
+    });
+
+    student.balance -= total;
+    student.cart = [];
+
+    await saveData();
+
+    alert(`付款成功！消费 ${total.toFixed(2)} 元，剩余 ${student.balance.toFixed(2)} 元`);
+    
+    renderStudentProducts();
+    renderCartItems();
+    updateBalanceDisplay();
+    renderProductManage();
+    renderStudentListManage();
+  }
+
+  // ============================================================
+  // 老师端：商品管理
+  // ============================================================
+  function renderProductManage() {
+    const container = document.getElementById('productManageContainer');
+    if (!container) return;
+
+    let html = '';
+    categories.forEach(cat => {
+      const catProducts = products.filter(p => p.category === cat);
+      if (catProducts.length === 0) return;
+
+      html += `<div class="category-group">`;
+      html += `<div class="category-title">${categoryEmoji[cat] || '📦'} ${cat}</div>`;
+      catProducts.forEach(p => {
+        let thumbHtml = '';
+        if (p.image) {
+          thumbHtml = `<img src="${p.image}" alt="${p.name}" class="manage-thumb-img" data-src="${p.image}" data-caption="${p.name}">`;
+        } else {
+          thumbHtml = `<span>${categoryEmoji[p.category] || '📦'}</span>`;
+        }
+
+        html += `
+          <div class="product-manage-item">
+            <div class="product-manage-info">
+              <div class="product-manage-thumb" data-src="${p.image || ''}" data-caption="${p.name}">${thumbHtml}</div>
+              <span><strong>${p.name}</strong></span>
+              <span class="price-badge">${p.price.toFixed(2)}元 / ${p.unit}</span>
+              <span class="price-badge">库存 ${p.stock}</span>
+            </div>
+            <div class="product-manage-actions">
+              <button class="btn-edit edit-product-btn" data-id="${p.id}">✏️ 修改</button>
+              <button class="btn-danger delete-product-btn" data-id="${p.id}">取消</button>
+            </div>
+          </div>
+        `;
+      });
+      html += `</div>`;
+    });
+
+    if (!html) {
+      html = '<div style="color:#7b98b3;text-align:center;padding:10px;">暂无商品</div>';
+    }
+
+    container.innerHTML = html;
+
+    document.querySelectorAll('.edit-product-btn').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        const id = e.target.dataset.id;
+        openEditModal(id);
+      });
+    });
+
+    document.querySelectorAll('.delete-product-btn').forEach(btn => {
+      btn.addEventListener('click', async (e) => {
+        const id = e.target.dataset.id;
+        if (confirm('确定要取消（删除）这个商品吗？学生端将不再显示。')) {
+          products = products.filter(p => p.id !== id);
+          students.forEach(s => {
+            s.cart = s.cart.filter(item => item.productId !== id);
+          });
+          await saveData();
+          renderProductManage();
+          renderStudentProducts();
+          renderCartItems();
+          updatePayButtonState();
+        }
+      });
+    });
+
+    document.querySelectorAll('.product-manage-thumb').forEach(thumb => {
+      const src = thumb.dataset.src;
+      if (src && src !== '' && src !== 'null' && src !== 'undefined') {
+        thumb.addEventListener('click', () => {
+          openImageModal(src, thumb.dataset.caption);
+        });
+      }
+    });
+  }
+
+  // ============================================================
+  // 学生端：学生管理
+  // ============================================================
+  function renderStudentListManage() {
+    const container = document.getElementById('studentListManage');
+    if (!container) return;
+    if (students.length === 0) {
+      container.innerHTML = '<div class="manage-empty">暂无学生，请添加~</div>';
+      return;
+    }
+    container.innerHTML = students.map(s => `
+      <div class="student-manage-item">
+        <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
+          <div class="student-avatar-manage" data-id="${s.id}" title="点击更换头像">
+            ${s.avatar ? `<img src="${s.avatar}" alt="${s.name}">` : '👤'}
+          </div>
+          <span>${s.name} (${s.class})</span>
+          <span class="price-badge">余额: ${s.balance.toFixed(2)}元</span>
+          <span class="price-badge">消费${s.history ? s.history.length : 0}次</span>
+        </div>
+        <div class="student-manage-actions">
+          <button class="edit-student-btn" data-id="${s.id}" title="编辑学生信息">✏️ 编辑</button>
+          <button class="view-student-history" data-id="${s.id}" title="查看购买记录">📋</button>
+          <button class="delete-student-btn" data-id="${s.id}" title="取消学生" style="color:#e74c3c;">🗑️</button>
+        </div>
+      </div>
+    `).join('');
+
+    document.querySelectorAll('.student-avatar-manage').forEach(avatarDiv => {
+      avatarDiv.addEventListener('click', (e) => {
+        const id = avatarDiv.dataset.id;
+        const student = students.find(s => s.id === id);
+        if (!student) return;
+        const fileInput = document.createElement('input');
+        fileInput.type = 'file';
+        fileInput.accept = 'image/*';
+        fileInput.onchange = async (ev) => {
+          const file = ev.target.files[0];
+          if (file) {
+            if (!checkImageSize(file)) return;
+            const imageUrl = await uploadImageToCloud(file);
+            if (imageUrl) {
+              student.avatar = imageUrl;
+              await saveData();
+              renderStudentListManage();
+              renderStudentWall();
+              if (student.id === currentStudentId) updateBalanceDisplay();
+            }
+          }
+        };
+        fileInput.click();
+      });
+    });
+
+    document.querySelectorAll('.edit-student-btn').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        const id = e.target.dataset.id;
+        openEditStudentModal(id);
+      });
+    });
+
+    document.querySelectorAll('.view-student-history').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        const id = e.target.dataset.id;
+        openHistoryModal(id);
+      });
+    });
+
+    document.querySelectorAll('.delete-student-btn').forEach(btn => {
+      btn.addEventListener('click', async (e) => {
+        const id = e.target.dataset.id;
+        const student = students.find(s => s.id === id);
+        if (!student) return;
+        if (confirm(`确定要取消学生「${student.name}」吗？该操作不可恢复。`)) {
+          students = students.filter(s => s.id !== id);
+          if (currentStudentId === id) {
+            currentStudentId = students.length > 0 ? students[0].id : null;
+          }
+          await saveData();
+          renderStudentWall();
+          renderStudentListManage();
+          renderStudentProducts();
+          renderCartItems();
+          updateBalanceDisplay();
+          updatePayButtonState();
+        }
+      });
+    });
+  }
+
+  // ============================================================
+  // 添加学生
+  // ============================================================
+  async function addStudent() {
+    const name = document.getElementById('studentNameInput').value.trim();
+    const className = document.getElementById('studentClassInput').value.trim();
+    const money = parseFloat(document.getElementById('studentMoneyInput').value);
+
+    if (!name) { alert('请填写学生姓名'); return; }
+    if (!className) { alert('请填写班级'); return; }
+    if (isNaN(money) || money < 0) { alert('请输入有效金额'); return; }
+
+    const newStudent = {
+      id: generateId('s'),
+      name, class: className, balance: money, cart: [],
+      avatar: uploadedAvatarBase64 || null,
+      history: []
+    };
+    students.push(newStudent);
+
+    await saveData();
+
+    document.getElementById('studentNameInput').value = '';
+    document.getElementById('studentClassInput').value = '';
+    document.getElementById('studentMoneyInput').value = '20';
+    document.getElementById('studentAvatarFile').value = '';
+    uploadedAvatarBase64 = null;
+    document.getElementById('avatarPreviewBox').innerHTML = '👤';
+
+    renderStudentWall();
+    renderStudentListManage();
+    renderStudentProducts();
+    renderCartItems();
+    updatePayButtonState();
+    alert('学生添加成功');
+  }
+
+  // ============================================================
+  // 添加商品
+  // ============================================================
+  async function addProduct() {
+    const name = document.getElementById('prodName').value.trim();
+    const price = parseFloat(document.getElementById('prodPrice').value);
+    const unit = document.getElementById('prodUnit').value.trim() || '个';
+    const stock = parseInt(document.getElementById('prodStock').value, 10);
+    const category = document.getElementById('prodCategory').value;
+
+    if (!name) { alert('请填写商品名称'); return; }
+    if (isNaN(price) || price <= 0) { alert('请输入有效的价格'); return; }
+    if (isNaN(stock) || stock < 0) { alert('请输入有效的库存数量'); return; }
+
+    const newProduct = {
+      id: generateId('p'),
+      name, price, unit, stock, category,
+      image: uploadedImageBase64 || null,
+    };
+
+    products.push(newProduct);
+
+    await saveData();
+
+    document.getElementById('prodName').value = '';
+    document.getElementById('prodPrice').value = '2';
+    document.getElementById('prodUnit').value = '个';
+    document.getElementById('prodStock').value = '10';
+    document.getElementById('prodImageFile').value = '';
+    uploadedImageBase64 = null;
+    document.getElementById('imagePreviewBox').innerHTML = '无图片';
+
+    renderStudentProducts();
+    renderProductManage();
+    alert('商品添加成功');
+  }
+
+  // ============================================================
+  // 解锁
+  // ============================================================
+  const lockOverlay = document.getElementById('lockOverlay');
+  const teacherContent = document.getElementById('teacherContent');
+  const passwordArea = document.getElementById('passwordArea');
+  const lockUnlockBtn = document.getElementById('lockUnlockBtn');
+  const lockPasswordInput = document.getElementById('lockPasswordInput');
+  const passwordInput = document.getElementById('passwordInput');
+
+  function unlockTeacher() {
+    isTeacherUnlocked = true;
+    lockOverlay.classList.add('hidden');
+    teacherContent.classList.remove('hidden');
+    passwordArea.classList.add('hidden');
+    renderProductManage();
+  }
+
+  function lockTeacher() {
+    isTeacherUnlocked = false;
+    lockOverlay.classList.remove('hidden');
+    teacherContent.classList.add('hidden');
+    passwordArea.classList.remove('hidden');
+    lockPasswordInput.value = '1234';
+    passwordInput.value = '1234';
+  }
+
+  // ============================================================
+  // 页面导航
+  // ============================================================
+  function showHome() {
+    lockTeacher();
+    homePage.classList.add('active');
+    studentWallPage.classList.remove('active');
+    studentShopPage.classList.remove('active');
+    teacherPage.classList.remove('active');
+  }
+
+  function showStudentWall() {
+    lockTeacher();
+    homePage.classList.remove('active');
+    studentWallPage.classList.add('active');
+    studentShopPage.classList.remove('active');
+    teacherPage.classList.remove('active');
+    studentManagePanel.classList.remove('active');
+    renderStudentWall();
+    renderStudentListManage();
+  }
+
+  function showStudentShop() {
+    lockTeacher();
+    homePage.classList.remove('active');
+    studentWallPage.classList.remove('active');
+    studentShopPage.classList.add('active');
+    teacherPage.classList.remove('active');
+    currentCategory = '全部';
+    document.querySelectorAll('.category-btn').forEach(btn => {
+      btn.classList.remove('active');
+      if (btn.dataset.category === '全部') btn.classList.add('active');
+    });
+    updateBalanceDisplay();
+    renderStudentProducts();
+    renderCartItems();
+    updatePayButtonState();
+  }
+
+  function showTeacher() {
+    homePage.classList.remove('active');
+    studentWallPage.classList.remove('active');
+    studentShopPage.classList.remove('active');
+    teacherPage.classList.add('active');
+    lockTeacher();
+  }
+
+  // ============================================================
+  // 初始化
+  // ============================================================
+  async function init() {
+    // 检查配置
+    if (SUPABASE_URL.includes('在这里填') || SUPABASE_ANON_KEY.includes('在这里填')) {
+      document.getElementById('loadingOverlay').innerHTML = `
+        <div style="font-size:3rem;">⚠️</div>
+        <div style="text-align:center; max-width:500px; padding:20px;">
+          <div style="font-size:1.3rem; margin-bottom:15px;">还没有配置 Supabase</div>
+          <div style="font-size:0.9rem; opacity:0.9;">
+            请打开这个 HTML 文件，找到代码中的：<br><br>
+            <code style="background:#00000030; padding:4px 8px; border-radius:6px;">const SUPABASE_URL = '...'</code><br>
+            <code style="background:#00000030; padding:4px 8px; border-radius:6px;">const SUPABASE_ANON_KEY = '...'</code><br><br>
+            把两个值替换成你 Supabase 项目里的真实值。
+          </div>
+        </div>
+      `;
+      return;
+    }
+
+    // 从云端加载数据
+    let savedData = null;
+    try {
+      savedData = await loadFromCloud();
+    } catch (e) {
+      console.warn('读取数据失败', e);
+    }
+
+    if (savedData && savedData.products && savedData.students) {
+      products = savedData.products;
+      students = savedData.students;
+      // 兼容旧数据
+      students.forEach(s => {
+        if (!s.cart) s.cart = [];
+        if (!s.history) s.history = [];
+        if (s.avatar === undefined) s.avatar = null;
+      });
+    } else {
+      // 首次使用，写入默认数据
+      products = JSON.parse(JSON.stringify(DEFAULT_PRODUCTS));
+      students = JSON.parse(JSON.stringify(DEFAULT_STUDENTS));
+      await saveData();
+    }
+
+    currentStudentId = students[0]?.id || null;
+
+    // 隐藏加载提示
+    document.getElementById('loadingOverlay').classList.add('hidden');
+
+    // 绑定事件
+    document.getElementById('goStudentBtn').addEventListener('click', showStudentWall);
+    document.getElementById('goTeacherBtn').addEventListener('click', showTeacher);
+
+    document.getElementById('backFromWall').addEventListener('click', showHome);
+    document.getElementById('backFromShop').addEventListener('click', showHome);
+    document.getElementById('backFromTeacher').addEventListener('click', showHome);
+    document.getElementById('backToStudentList').addEventListener('click', showStudentWall);
+
+    document.getElementById('viewHistoryBtn').addEventListener('click', () => openHistoryModal(currentStudentId));
+
+    document.getElementById('toggleManageStudents').addEventListener('click', () => {
+      studentManagePanel.classList.toggle('active');
+      if (studentManagePanel.classList.contains('active')) {
+        renderStudentListManage();
+      }
+    });
+
+    document.querySelectorAll('.category-btn').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        document.querySelectorAll('.category-btn').forEach(b => b.classList.remove('active'));
+        e.target.classList.add('active');
+        currentCategory = e.target.dataset.category;
+        renderStudentProducts();
+      });
+    });
+
+    document.getElementById('payBtn').addEventListener('click', pay);
+
+    lockUnlockBtn.addEventListener('click', () => {
+      if (lockPasswordInput.value === '1234') {
+        unlockTeacher();
+      } else {
+        alert('密码错误');
+      }
+    });
+
+    document.getElementById('unlockBtn').addEventListener('click', () => {
+      if (passwordInput.value === '1234') {
+        unlockTeacher();
+      } else {
+        alert('密码错误');
+      }
+    });
+
+    // 商品图片上传
+    document.getElementById('prodImageFile').addEventListener('change', async (e) => {
+      const file = e.target.files[0];
+      const previewBox = document.getElementById('imagePreviewBox');
+      if (file) {
+        if (!checkImageSize(file)) { e.target.value = ''; return; }
+        previewBox.innerHTML = '上传中...';
+        const imageUrl = await uploadImageToCloud(file);
+        if (imageUrl) {
+          uploadedImageBase64 = imageUrl;
+          previewBox.innerHTML = `<img src="${imageUrl}">`;
+          previewBox.onclick = () => openImageModal(imageUrl, '上传的图片');
+        } else {
+          previewBox.innerHTML = '上传失败';
+          uploadedImageBase64 = null;
+        }
+      } else {
+        uploadedImageBase64 = null;
+        previewBox.innerHTML = '无图片';
+        previewBox.onclick = null;
+      }
+    });
+
+    // 学生头像上传（添加学生时）
+    document.getElementById('studentAvatarFile').addEventListener('change', async (e) => {
+      const file = e.target.files[0];
+      const previewBox = document.getElementById('avatarPreviewBox');
+      if (file) {
+        if (!checkImageSize(file)) { e.target.value = ''; return; }
+        previewBox.innerHTML = '上传中...';
+        const imageUrl = await uploadImageToCloud(file);
+        if (imageUrl) {
+          uploadedAvatarBase64 = imageUrl;
+          previewBox.innerHTML = `<img src="${imageUrl}">`;
+          previewBox.onclick = () => openImageModal(imageUrl, '学生头像');
+        } else {
+          previewBox.innerHTML = '上传失败';
+          uploadedAvatarBase64 = null;
+        }
+      } else {
+        uploadedAvatarBase64 = null;
+        previewBox.innerHTML = '👤';
+        previewBox.onclick = null;
+      }
+    });
+
+    document.getElementById('addProductBtn').addEventListener('click', addProduct);
+    document.getElementById('addStudentBtn').addEventListener('click', addStudent);
+
+    // 重置数据按钮
+    document.getElementById('resetDataBtn').addEventListener('click', async () => {
+      if (confirm('确定要恢复默认数据吗？所有商品、学生、余额、购买记录都会被重置！')) {
+        products = JSON.parse(JSON.stringify(DEFAULT_PRODUCTS));
+        students = JSON.parse(JSON.stringify(DEFAULT_STUDENTS));
+        currentStudentId = students[0]?.id || null;
+        await saveData();
+        renderProductManage();
+        renderStudentListManage();
+        renderStudentWall();
+        renderStudentProducts();
+        renderCartItems();
+        updateBalanceDisplay();
+        updatePayButtonState();
+        alert('已恢复默认数据');
+      }
+    });
+
+    lockTeacher();
+    renderStudentWall();
+    renderStudentProducts();
+    renderCartItems();
+    updatePayButtonState();
+  }
+
+  init();
+</script>
+</body>
+</html>
